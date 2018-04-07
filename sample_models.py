@@ -142,13 +142,18 @@ def final_model(input_dim, filters, kernel_size, conv_stride,
                  activation='relu',
                  name='conv1d')(input_data)
 
-    conv_1d = Dropout(0.2, name="Drop_0_0.2") (conv_1d)
+    b_norm = BatchNormalization()(conv_1d)
+
+    conv_1d = Dropout(0.2, name="Drop_0_0.2") (b_norm)
 
 
     bidir_rnn = Bidirectional(GRU(units, activation='relu', return_sequences=True, implementation=2, name='b_rnn')) (conv_1d)
+    bidir_rnn = Bidirectional(GRU(units, activation='relu', return_sequences=True, implementation=2, name='b_rnn')) (bidir_rnn)
 
-    bidir_rnn = Dropout(0.2,name="Drop_1_0.2") (bidir_rnn)
-    time_dense = TimeDistributed(Dense(output_dim)) (bidir_rnn)
+    b_norm_rnn = BatchNormalization()(bidir_rnn)
+    bidir_rnn_norm = Dropout(0.2,name="Drop_1_0.2") (b_norm_rnn)
+
+    time_dense = TimeDistributed(Dense(output_dim)) (bidir_rnn_norm)
 
     # TODO: Add softmax activation layer
     y_pred = Activation('softmax', name='softmax') (time_dense)
